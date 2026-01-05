@@ -6,17 +6,7 @@ import { QuizCard } from '@/components/quiz/QuizCard'
 import { Button } from '@/components/ui/Button'
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-
-interface Question {
-  id: string
-  question_type: string
-  passage: string | null
-  question_text: string
-  options: string[]
-  correct_answer: string
-  explanation: string
-  order_index: number
-}
+import type { QuizQuestion } from '@/types'
 
 interface Quiz {
   id: string
@@ -33,7 +23,7 @@ export default function QuizPage() {
   const quizId = params.id as string
 
   const [quiz, setQuiz] = useState<Quiz | null>(null)
-  const [questions, setQuestions] = useState<Question[]>([])
+  const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
