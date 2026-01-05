@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const { category, difficulty, questionsCount, timerMode, quizMode } = parseResult.data
 
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Rate limiting для гостевых пользователей (по IP)

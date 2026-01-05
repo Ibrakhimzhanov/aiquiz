@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     const { quizId, answers, timeSpent } = parseResult.data
 
-    const supabase = createClient()
+    const supabase = await createClient()
     const serviceClient = createServiceClient()
     const { data: { user } } = await supabase.auth.getUser()
 
