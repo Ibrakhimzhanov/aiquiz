@@ -215,9 +215,12 @@ export async function POST(request: NextRequest) {
 
     return response
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : ''
     logger.error('Error generating quiz', error)
+    console.error('Generate quiz error:', errorMessage, errorStack)
     return NextResponse.json(
-      { error: 'Failed to generate quiz. Please try again.' },
+      { error: `Failed to generate quiz: ${errorMessage}` },
       { status: 500 }
     )
   }
