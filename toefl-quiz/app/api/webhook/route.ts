@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
           // Получаем подписку для определения даты окончания
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
-          )
+          ) as Stripe.Subscription
 
           await supabase
             .from('users')
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         const subscriptionId = invoice.subscription as string
 
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription
           const userId = subscription.metadata?.userId
 
           if (userId) {
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         const subscriptionId = invoice.subscription as string
 
         if (subscriptionId && invoice.billing_reason === 'subscription_cycle') {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription
           const userId = subscription.metadata?.userId
 
           if (userId) {
