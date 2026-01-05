@@ -134,12 +134,13 @@ export async function POST(request: NextRequest) {
 
     if (quizError) {
       logger.error('Error creating quiz', quizError, { category, difficulty, questionsCount })
+      console.error('Quiz creation error:', JSON.stringify(quizError))
       // Откат резервирования лимита при ошибке
       if (user) {
         await supabase.rpc('rollback_quiz_reservation', { user_uuid: user.id })
       }
       return NextResponse.json(
-        { error: 'Failed to create quiz' },
+        { error: 'Failed to create quiz', details: quizError.message || quizError.code },
         { status: 500 }
       )
     }
