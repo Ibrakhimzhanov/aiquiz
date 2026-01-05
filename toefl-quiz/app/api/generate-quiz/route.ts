@@ -1,7 +1,7 @@
-// API для генерации теста через OpenAI
+// API для генерации теста через Gemini AI
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { openai, generateWithRetry } from '@/lib/openai'
+import { generateQuizQuestions, generateWithRetry } from '@/lib/ai'
 import { getPromptForCategory } from '@/prompts/quiz-prompts'
 import {
   generateQuizSchema,
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Генерация вопросов через OpenAI с retry
+    // Генерация вопросов через Gemini AI с retry
     const { system, user: userPrompt } = getPromptForCategory(
       category,
       difficulty,
@@ -91,27 +91,14 @@ export async function POST(request: NextRequest) {
     )
 
     const generatedQuiz = await generateWithRetry(async () => {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-        response_format: { type: 'json_object' },
-      })
-
-      const content = completion.choices[0]?.message?.content
-      if (!content) {
-        throw new Error('No content in response')
-      }
+      const content = await generateQuizQuestions(system, userPrompt)
 
       const parsed = JSON.parse(content)
 
-      // Валидация структуры ответа от OpenAI
+      // Валидация структуры ответа от AI
       const validationResult = generatedQuizResponseSchema.safeParse(parsed)
       if (!validationResult.success) {
-        logger.error('OpenAI response validation failed', validationResult.error, { category, difficulty })
+        logger.error('AI response validation failed', validationResult.error, { category, difficulty })
         throw new Error('Invalid response format from AI')
       }
 
