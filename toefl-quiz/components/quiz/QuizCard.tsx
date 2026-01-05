@@ -24,7 +24,7 @@ export function QuizCard({
   mode,
 }: QuizCardProps) {
   // Показывать результат сразу в режиме обучения после выбора ответа
-  const shouldShowResult = showResult || (mode === 'learning' && selectedAnswer)
+  const shouldShowResult = Boolean(showResult || (mode === 'learning' && selectedAnswer))
 
   return (
     <Card className="w-full max-w-3xl mx-auto animate-fadeIn">
