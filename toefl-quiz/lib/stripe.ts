@@ -6,7 +6,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
   console.warn('Warning: STRIPE_SECRET_KEY is not configured')
 }
 
-// @ts-expect-error - Stripe types vary between versions, using default API version
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 // Цены подписки
