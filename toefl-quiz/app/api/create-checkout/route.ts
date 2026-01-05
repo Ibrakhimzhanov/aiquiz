@@ -1,10 +1,18 @@
 // API для создания Stripe Checkout сессии
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, PRICING_PLANS } from '@/lib/stripe'
+import { getStripe, isStripeConfigured, PRICING_PLANS } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверяем настроен ли Stripe
+    if (!isStripeConfigured) {
+      return NextResponse.json(
+        { error: 'Payments are not configured yet. This is a demo mode.' },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { planId } = body as { planId: 'weekly' | 'yearly' }
 
@@ -22,6 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    const stripe = getStripe()
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured' },
+        { status: 503 }
       )
     }
 

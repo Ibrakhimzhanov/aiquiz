@@ -1,28 +1,29 @@
-// Клиент Stripe
+// Клиент Stripe (заглушка для тестирования)
 import Stripe from 'stripe'
+
+// Проверка настроен ли Stripe
+export const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY
 
 // Ленивая инициализация Stripe клиента
 let stripeInstance: Stripe | null = null
 
-export function getStripe(): Stripe {
+export function getStripe(): Stripe | null {
+  if (!isStripeConfigured) {
+    return null
+  }
   if (!stripeInstance) {
-    const key = process.env.STRIPE_SECRET_KEY
-    if (!key) {
-      throw new Error('STRIPE_SECRET_KEY is not configured')
-    }
-    stripeInstance = new Stripe(key)
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY!)
   }
   return stripeInstance
 }
 
-// Для обратной совместимости - экспортируем как stripe
-// Используется только в runtime, не при сборке
+// Для обратной совместимости
 export const stripe = {
-  get webhooks() { return getStripe().webhooks },
-  get subscriptions() { return getStripe().subscriptions },
-  get checkout() { return getStripe().checkout },
-  get customers() { return getStripe().customers },
-  get paymentIntents() { return getStripe().paymentIntents },
+  get webhooks() { return getStripe()?.webhooks },
+  get subscriptions() { return getStripe()?.subscriptions },
+  get checkout() { return getStripe()?.checkout },
+  get customers() { return getStripe()?.customers },
+  get paymentIntents() { return getStripe()?.paymentIntents },
 }
 
 // Цены подписки

@@ -1,11 +1,19 @@
 // Stripe Webhook для обработки событий подписки
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe, isStripeConfigured } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
+  // Проверяем настроен ли Stripe
+  if (!isStripeConfigured) {
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 503 }
+    )
+  }
+
   // Проверка конфигурации webhook secret
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
   if (!webhookSecret) {
@@ -13,6 +21,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Server configuration error' },
       { status: 500 }
+    )
+  }
+
+  const stripe = getStripe()
+  if (!stripe) {
+    return NextResponse.json(
+      { error: 'Stripe not initialized' },
+      { status: 503 }
     )
   }
 
@@ -110,7 +126,6 @@ export async function POST(request: NextRequest) {
           const userId = subscription.metadata?.userId
 
           if (userId) {
-            // Логируем неудачный платёж (можно добавить отправку email)
             logger.warn('Payment failed for user', { userId, subscriptionId })
           }
         }
@@ -118,7 +133,6 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_succeeded': {
-        // Обработка успешного платежа по подписке (продление)
         const invoice = event.data.object as Stripe.Invoice
         const subscriptionId = invoice.subscription as string
 
@@ -127,7 +141,6 @@ export async function POST(request: NextRequest) {
           const userId = subscription.metadata?.userId
 
           if (userId) {
-            // Обновляем дату окончания подписки при успешном продлении
             await supabase
               .from('users')
               .update({
@@ -145,20 +158,16 @@ export async function POST(request: NextRequest) {
       }
 
       case 'payment_intent.succeeded': {
-        // Обработка одноразовых платежей (если будут использоваться)
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const userId = paymentIntent.metadata?.userId
 
         if (userId) {
           logger.info('One-time payment succeeded', { userId })
-          // Здесь можно добавить логику для одноразовых покупок
-          // Например: разблокировка контента, бонусы и т.д.
         }
         break
       }
 
       default:
-        // Неизвестные события логируем, но не возвращаем ошибку
         logger.debug('Unhandled event type', { eventType: event.type })
     }
 
