@@ -109,17 +109,24 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Batch update вопросов через upsert
-    const { error: updateQuestionsError } = await dbClient
-      .from('quiz_questions')
-      .upsert(updates, { onConflict: 'id' })
+    // Update каждого вопроса отдельно
+    for (const update of updates) {
+      const { error: updateQuestionError } = await dbClient
+        .from('quiz_questions')
+        .update({
+          user_answer: update.user_answer,
+          is_correct: update.is_correct,
+        })
+        .eq('id', update.id)
 
-    if (updateQuestionsError) {
-      logger.error('Error updating questions', updateQuestionsError, { quizId })
-      return NextResponse.json(
-        { error: 'Failed to save answers' },
-        { status: 500 }
-      )
+      if (updateQuestionError) {
+        logger.error('Error updating question', updateQuestionError, { quizId, questionId: update.id })
+        console.error('Update question error:', JSON.stringify(updateQuestionError))
+        return NextResponse.json(
+          { error: 'Failed to save answers', details: updateQuestionError.message || updateQuestionError.code },
+          { status: 500 }
+        )
+      }
     }
 
     // Обновляем тест с результатом
