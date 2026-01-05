@@ -6,10 +6,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   console.warn('Warning: STRIPE_SECRET_KEY is not configured')
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-  typescript: true,
-})
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 // Цены подписки
 export const PRICING_PLANS = {
