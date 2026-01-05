@@ -43,7 +43,7 @@ export async function generateQuizQuestions(
   userPrompt: string
 ): Promise<string> {
   const ai = getAI()
-  const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
   const prompt = `${systemPrompt}\n\n${userPrompt}`
 
