@@ -1,9 +1,24 @@
 // Клиент OpenAI
 import OpenAI from 'openai'
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Ленивая инициализация OpenAI клиента
+let openaiInstance: OpenAI | null = null
+
+export function getOpenAI(): OpenAI {
+  if (!openaiInstance) {
+    const key = process.env.OPENAI_API_KEY
+    if (!key) {
+      throw new Error('OPENAI_API_KEY is not configured')
+    }
+    openaiInstance = new OpenAI({ apiKey: key })
+  }
+  return openaiInstance
+}
+
+// Для обратной совместимости
+export const openai = {
+  get chat() { return getOpenAI().chat },
+}
 
 // Функция для генерации теста с retry логикой
 export async function generateWithRetry<T>(
