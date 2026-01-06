@@ -118,9 +118,10 @@ export async function POST(request: NextRequest) {
       // Валидация структуры ответа от AI
       const validationResult = generatedQuizResponseSchema.safeParse(parsed)
       if (!validationResult.success) {
-        console.error('AI response validation failed:', JSON.stringify(validationResult.error.flatten()))
-        console.error('Received content:', cleanContent.slice(0, 500))
-        throw new Error('Invalid response format from AI')
+        const errorDetails = JSON.stringify(validationResult.error.flatten())
+        console.error('AI response validation failed:', errorDetails)
+        console.error('Received content:', cleanContent.slice(0, 1000))
+        throw new Error(`Invalid response format from AI: ${errorDetails}`)
       }
 
       return validationResult.data
