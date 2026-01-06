@@ -169,7 +169,7 @@ export default function PricingPage() {
 
               <Button
                 className="w-full"
-                variant={plan.highlight ? 'default' : 'outline'}
+                variant={plan.highlight ? 'primary' : 'outline'}
                 disabled={plan.disabled || loading === plan.id}
                 onClick={() => handleSubscribe(plan.id)}
               >
