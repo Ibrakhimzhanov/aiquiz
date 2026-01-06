@@ -93,12 +93,33 @@ export async function POST(request: NextRequest) {
     const generatedQuiz = await generateWithRetry(async () => {
       const content = await generateQuizQuestions(system, userPrompt)
 
-      const parsed = JSON.parse(content)
+      // Убираем возможные markdown обертки
+      let cleanContent = content.trim()
+      if (cleanContent.startsWith('```json')) {
+        cleanContent = cleanContent.slice(7)
+      } else if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.slice(3)
+      }
+      if (cleanContent.endsWith('```')) {
+        cleanContent = cleanContent.slice(0, -3)
+      }
+      cleanContent = cleanContent.trim()
+
+      const parsed = JSON.parse(cleanContent)
+
+      // Нормализуем correct_answer (убираем скобки типа "A)" -> "A")
+      if (parsed.questions) {
+        parsed.questions = parsed.questions.map((q: Record<string, unknown>) => ({
+          ...q,
+          correct_answer: String(q.correct_answer).replace(/[()]/g, '').trim().charAt(0).toUpperCase()
+        }))
+      }
 
       // Валидация структуры ответа от AI
       const validationResult = generatedQuizResponseSchema.safeParse(parsed)
       if (!validationResult.success) {
-        logger.error('AI response validation failed', validationResult.error, { category, difficulty })
+        console.error('AI response validation failed:', JSON.stringify(validationResult.error.flatten()))
+        console.error('Received content:', cleanContent.slice(0, 500))
         throw new Error('Invalid response format from AI')
       }
 
