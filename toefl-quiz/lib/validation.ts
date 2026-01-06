@@ -41,12 +41,12 @@ export const submitQuizSchema = z.object({
   timeSpent: z.number().int().min(0).max(86400), // Максимум 24 часа в секундах
 })
 
-// Валидатор структуры вопроса от OpenAI
+// Валидатор структуры вопроса от AI
 export const generatedQuestionSchema = z.object({
   question_type: z.enum(['multiple_choice', 'error_identification', 'sentence_completion', 'reading_comprehension']),
-  passage: z.string().optional(),
+  passage: z.string().nullable().optional(),
   question_text: z.string().min(1),
-  options: z.array(z.string()).length(4),
+  options: z.array(z.string()).min(4).max(4),
   correct_answer: z.enum(['A', 'B', 'C', 'D']),
   explanation: z.string().min(1),
 })
